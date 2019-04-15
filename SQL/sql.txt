@@ -1,0 +1,236 @@
+
+1. SELECT TOP => get only the number of the first records
+    MySQL Syntax:
+        SELECT column_name(s)
+        FROM table_name
+        WHERE condition
+        LIMIT number;
+
+        *Ex: => selects the first three records from the "Customers" table
+            SELECT * FROM Customers LIMIT 3;
+
+    SQL Server / MS Access Syntax:
+        SELECT TOP number|percent column_name(s)
+        FROM table_name
+        WHERE condition;
+
+        *Ex: => selects the first three records from the "Customers" table
+            SELECT TOP 3 * FROM Customers;   
+
+    Oracle Syntax:
+        SELECT column_name(s)
+        FROM table_name
+        WHERE ROWNUM <= number;
+
+2. MIN & MAX
+    SELECT MIN(column_name)
+    FROM table_name
+    WHERE condition;
+
+    SELECT MAX(column_name)
+    FROM table_name
+    WHERE condition;
+
+3. COUNT(), AVG() & SUM()
+    SELECT COUNT(column_name)
+    FROM table_name
+    WHERE condition;
+
+    SELECT AVG(column_name)
+    FROM table_name
+    WHERE condition;
+
+    SELECT SUM(column_name)
+    FROM table_name
+    WHERE condition;
+
+4. LIKE: => used in a WHERE clause to search for a specified pattern in a column
+    SELECT column1, column2, ...
+    FROM table_name
+    WHERE columnN LIKE pattern;
+
+    wildcards:
+        % => The percent sign represents zero, one, or multiple characters
+        _ => The underscore represents a single character
+
+    *Ex:
+        - Selects all customers with a CustomerName starting with "a"
+            SELECT * FROM Customers WHERE CustomerName LIKE 'a%';
+
+        - Selects all customers with a CustomerName ending with "a"
+            SELECT * FROM Customers WHERE CustomerName LIKE '%a';
+
+        - Selects all customers with a CustomerName that have "r" in the second position
+            SELECT * FROM Customers WHERE CustomerName LIKE '_r%';
+
+        - Selects all customers with a ContactName that starts with "a" and ends with "o"
+            SELECT * FROM Customers WHERE ContactName LIKE 'a%o';
+
+        - Selects all customers with a City starting with "a", "b", or "c"
+            SELECT * FROM Customers WHERE City LIKE '[a-c]%';
+
+        - Selects all customers with a City NOT starting with "b", "s", or "p"
+            SELECT * FROM Customers WHERE City LIKE '[!bsp]%';
+            or
+            SELECT * FROM Customers WHERE City NOT LIKE '[bsp]%';
+
+5. INNER JOIN => matching values in both tables
+    SELECT column_name(s)
+    FROM table1
+    INNER JOIN table2 ON table1.column_name = table2.column_name;
+
+    SELECT Orders.OrderID, Customers.CustomerName, Shippers.ShipperName
+    FROM ((Orders
+    INNER JOIN Customers ON Orders.CustomerID = Customers.CustomerID)
+    INNER JOIN Shippers ON Orders.ShipperID = Shippers.ShipperID);
+
+6. UNION 
+    => combine the result-set of two or more SELECT statements
+    => selects only distinct values by default
+
+    Required:
+        Each SELECT statement within UNION must have the same number of columns
+        The columns must also have similar data types
+        The columns in each SELECT statement must also be in the same order 
+
+    SELECT column_name(s) FROM table1
+    UNION
+    SELECT column_name(s) FROM table2;
+
+6. UNION ALL
+    => combine the result-set of two or more SELECT statements
+    => selects values (included duplicate)
+
+    SELECT column_name(s) FROM table1
+    UNION ALL
+    SELECT column_name(s) FROM table2;
+
+7. GROUP BY
+    => often used with aggregate functions (COUNT, MAX, MIN, SUM, AVG) to group the result-set by one or more columns
+
+    SELECT column_name(s)
+    FROM table_name
+    WHERE condition
+    GROUP BY column_name(s)
+    ORDER BY column_name(s);
+
+    *Ex: lists the number of orders sent by each shipper
+        SELECT COUNT(CustomerID), Country
+        FROM Customers
+        GROUP BY Country
+        ORDER BY COUNT(CustomerID) DESC;
+
+8. HAVING 
+    => was added to SQL because the WHERE keyword could not be used with aggregate functions
+
+    SELECT column_name(s)
+    FROM table_name
+    WHERE condition
+    GROUP BY column_name(s)
+    HAVING condition
+    ORDER BY column_name(s);
+
+    Ex: lists if the employees "Davolio" or "Fuller" have registered more than 25 orders
+        SELECT Employees.LastName, COUNT(Orders.OrderID) AS NumberOfOrders
+        FROM Orders
+        INNER JOIN Employees ON Orders.EmployeeID = Employees.EmployeeID
+        WHERE LastName = 'Davolio' OR LastName = 'Fuller'
+        GROUP BY LastName
+        HAVING COUNT(Orders.OrderID) > 25;
+
+9. EXISTS 
+    => used to test for the existence of any record in a subquery
+    => returns true if the subquery returns one or more records
+
+    SELECT column_name(s)
+    FROM table_name
+    WHERE EXISTS
+    (SELECT column_name FROM table_name WHERE condition);
+
+    *Ex: returns TRUE and lists the suppliers with a product price less than 20
+        SELECT SupplierName
+        FROM Suppliers
+        WHERE EXISTS (SELECT ProductName FROM Products WHERE SupplierId = Suppliers.supplierId AND Price < 20);
+
+10. ANY & ALL
+    => used with a WHERE or HAVING clause.
+    => returns true if any of the subquery values meet the condition.
+    => returns true if all of the subquery values meet the condition.
+
+    SELECT column_name(s)
+    FROM table_name
+    WHERE column_name operator ANY
+    (SELECT column_name FROM table_name WHERE condition);
+
+    SELECT column_name(s)
+    FROM table_name
+    WHERE column_name operator ALL
+    (SELECT column_name FROM table_name WHERE condition);
+
+11. SELECT INTO
+    => copies data from one table into a new table.
+
+    SELECT *
+    INTO newtable [IN externaldb]
+    FROM oldtable
+    WHERE condition;
+
+    SELECT column1, column2, column3, ...
+    INTO newtable [IN externaldb]
+    FROM oldtable
+    WHERE condition;
+
+    *Ex: creates a backup copy of Customers
+    SELECT * INTO CustomersBackup2017
+    FROM Customers;
+
+    * SELECT INTO can also be used to create a new, empty table using the schema of another. 
+      Just add a WHERE clause that causes the query to return no data.
+        SELECT * INTO newtable
+        FROM oldtable
+        WHERE 1 = 0;
+
+12. INSERT INTO SELECT
+        => copies data from one table and inserts it into another table.
+    Require:
+        Data types in source and target tables match.
+
+    The existing records in the target table are unaffected
+
+    INSERT INTO table2 (column1, column2, column3, ...)
+    SELECT column1, column2, column3, ...
+    FROM table1
+    WHERE condition;
+
+    *Ex: copies "Suppliers" into "Customers"
+    INSERT INTO Customers (CustomerName, City, Country)
+    SELECT SupplierName, City, Country FROM Suppliers;
+
+13. IFNULL(), ISNULL(), COALESCE(), & NVL()
+
+    MySQL:
+        => IFNULL() return an alternative value if an expression is NULL
+
+        SELECT ProductName, UnitPrice * (UnitsInStock + IFNULL(UnitsOnOrder, 0))
+        FROM Products
+
+        SELECT ProductName, UnitPrice * (UnitsInStock + COALESCE(UnitsOnOrder, 0))
+        FROM Products
+
+    SQL Server: 
+        => ISNULL(checkValue, defaultValue) => return an alternative value when an expression is NULL
+
+        SELECT ProductName, UnitPrice * (UnitsInStock + ISNULL(UnitsOnOrder, 0))
+        FROM Products
+
+    MS Access: 
+        => IsNull() returns TRUE (-1) if an expression is a null value, otherwise FALSE (0)
+
+        SELECT ProductName, UnitPrice * (UnitsInStock + IIF(IsNull(UnitsOnOrder), 0, UnitsOnOrder))
+        FROM Products
+
+    Oracle:
+        => NVL() achieves the same result
+
+        SELECT ProductName, UnitPrice * (UnitsInStock + NVL(UnitsOnOrder, 0))
+        FROM Products

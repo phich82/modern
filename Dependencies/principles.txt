@@ -1,0 +1,66 @@
+1. Khác biệt giữa 3 khái niệm
+Dependency Inversion: one (last) of 5 of SOLID Principle => nguyên lý để thiết kế và viết code.
+    - Các module cấp cao không nên phụ thuộc vào các modules cấp thấp. Cả 2 nên phụ thuộc vào abstraction.
+    - Interface (abstraction) không nên phụ thuộc vào chi tiết, mà ngược lại. 
+      (Các class giao tiếp với nhau thông qua interface, không phải thông qua implementation.)
+
+    => các module cùng phụ thuộc vào 1 interface không đổi
+        -> dễ thay thế, sửa đổi module cấp thấp mà không ảnh hưởng gì tới module cấp cao.
+
+Inversion of Control (Pattern) => một design pattern được tạo ra để code tuân thủ nguyên lý Dependency Inversion.
+    Có nhiều cách hiện thực pattern này:
+        <ServiceLocator> 
+        <Event> 
+        <Delegate> 
+        <Dependency Injection>
+
+Dependency Injection => Đây là một cách để hiện thực Inversion of Control Pattern 
+    - Có thể coi nó là một design pattern riêng cũng được. 
+    - Các module phụ thuộc (dependency) sẽ được inject vào module cấp cao.
+
+* Khi nói tới DI, tức là nói tới Depedency Injection. Hiện nay, một số DI container như Unity, StructureMap v…v, 
+  hỗ trợ chúng ta trong việc cài đặt và áp dụng Dependency Injection vào code. Tuy nhiên, vẫn có thể gọi chúng là 
+  IoC Container, ý nghĩa tương tự nhau.
+
+2. Dependency Injection:
+    - Các module không giao tiếp trực tiếp với nhau, mà thông qua interface. 
+      Module cấp thấp sẽ implement interface, module cấp cao sẽ gọi module cấp thấp. 
+
+      Ví dụ: Để giao tiếp với database: 
+        + Ta có interface IDatabase, 
+        + Các module cấp thấp là XMLDatabase, SQLDatabase. 
+        + Module cấp cao là CustomerBusiness sẽ sử dụng interface IDatabase.
+
+    - Việc khởi tạo các module cấp thấp sẽ do DI Container thực hiện. 
+        Ví dụ: Trong module CustomerBusiness, ta sẽ không khởi tạo IDatabase db = new XMLDatabase(), 
+               việc này sẽ do DI Container thực hiện. Module CustomerBusiness sẽ không biết gì về 
+               module XMLDatabase hay SQLDatabase.
+
+    - Việc Module nào gắn với interface nào sẽ được config trong code hoặc trong file XML.
+
+    - DI được dùng để làm giảm sự phụ thuộc giữa các module, dễ dàng hơn trong việc thay đổi module, bảo trì code và testing. 
+
+3. Các dạng DI:
+    - Constructor Injection: => Đây là cách thông dụng nhất
+        Các dependency sẽ được container truyền vào (inject vào) 1 class thông qua constructor của class đó.        
+
+    - Setter Injection: Các dependency sẽ được truyền vào 1 class thông qua các hàm Setter.
+
+    - Interface Injection: Class cần inject sẽ implement 1 interface. Interface này chứa 1 hàm tên Inject. 
+      Container sẽ injection dependency vào 1 class thông qua việc gọi hàm Inject của interface đó. 
+      Đây là cách rườm rà và ít được sử dụng nhất.
+
+4. Ưu điểm và khuyết điểm của DI
+    Dĩ nhiên, DI không phải vạn năng, nó cũng có những ưu điểm và khuyết điểm, do đó không phải project nào cũng nên áp dụng DI. 
+    Với những dự án lớn, code nhiều, DI là thứ rất cần thiết để đảm bảo code dễ bảo trì, dễ thay đổi. 
+    Các framework nổi tiếng như Laravel, Spring, Struts2, ASP.NET MVC,… đều hỗ trợ hoặc tích hợp sẵn DI.
+
+            ƯU ĐIỂM	                                                KHUYẾT ĐIỂM
+        Giảm sự kết dính giữa các module                        Khái niệm DI khá “khó tiêu”, các developer mới sẽ gặp khó khăn khi học
+        Code dễ bảo trì, dễ thay thế module                     Vi2 sử dụng interface, nên sẽ khó debug, do không biết chính xác module nào được gọi
+        Rất dễ test và viết Unit Test                           Các object được khởi tạo toàn bộ ngay từ đầu => có thể làm giảm performance
+        Dễ dàng thấy quan hệ giữa các module                    Làm tăng độ phức tạp của code
+        (Vì các dependecy đều được inject vào constructor)      
+
+
+
